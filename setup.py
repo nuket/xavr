@@ -47,8 +47,13 @@ def mcu_to_def(mcu):
 
 
 def parse_supported_mcus(toolpaths):
+    """
+    Parses the output of "avr-gcc" to find the supported MCU types.
+
+    :return: list of supported MCU types and preprocessor defines key-value pairs
+    """
     command = '{gcc} -Wa,-mlist-devices --target-help'.format(gcc=toolpaths['avr-gcc_loc'])
-    HEADER = 'Known MCU names:'
+    HEADER  = 'Known MCU names:'
 
     print
     print "Parsing avr-gcc supported MCU info.";
@@ -72,16 +77,38 @@ def parse_supported_mcus(toolpaths):
             else:
                 break
 
+    for mcu in mcus:
+        print 'MCU: {m:<16} uses #define {d}'.format(m=mcu['mcu'], d=mcu['defi'])
+
     return mcus
 
 
-def supported_programmers():
-    HEADER = 'Valid programmers are:'
+def parse_supported_programmers(toolpaths):
+    """
+    Parses the output of "avrdude" to find the supported programmers.
+
+    In the case of the Arduino.app bundled avrdude, the default configuration file
+    path doesn't work, and must be specified. It is located, relative to avrdude,
+    in the '../etc/avrdude.conf' file.
+
+    :return: list of supported AVR programmers
+    """
+    avrdude_conf = ''
+    if 'Arduino' in toolpaths['avrdude_loc']:
+        avrdude_conf = os.path.normpath(os.path.dirname(toolpaths['avrdude_loc']) + '/../etc/avrdude.conf')
+
+    command   = '{0} {1} -c? '.format(toolpaths['avrdude_loc'], '-C {0}'.format(avrdude_conf) if avrdude_conf else '')
+    HEADER    = 'Valid programmers are:'
     PROG_LINE = re.compile('  (.+?)\s+=.*')
 
-    proc = subprocess.Popen('avrdude -c?', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    print
+    print "Parsing avrdude supported programmers.";
+    print 'Checking output of "{0}"'.format(command)
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
-    exitcode = proc.returncode
+    # exitcode = proc.returncode
+
     lines = string.split(err, '\n')
 
     programmers = []
@@ -95,6 +122,9 @@ def supported_programmers():
                 programmers.append({'programmer': m.group(1)})
             else:
                 break
+
+    for p in programmers:
+        print p['programmer']
 
     return programmers
 
@@ -202,9 +232,9 @@ def main():
     exec_template('Makefile.tpl', 'Makefile', toolpaths)
 
     model = {
-        'isystem': ' '.join(parse_system_includes(toolpaths)),
-        'mcus':             parse_supported_mcus(toolpaths),
-        'programmers': supported_programmers()
+        'isystem': ' '.join(parse_system_includes      (toolpaths)),
+        'mcus':             parse_supported_mcus       (toolpaths),
+        'programmers':      parse_supported_programmers(toolpaths)
     }
 
     print
