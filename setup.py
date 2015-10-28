@@ -7,7 +7,7 @@ import re
 import shutil
 
 ITER_BEGIN = re.compile('\s*@iter\s+(.+?)@\s*')
-ITER_END = re.compile('\s*@end@\s*')
+ITER_END   = re.compile('\s*@end@\s*')
 
 ARDUINO_PATH = '/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin'
 
@@ -36,9 +36,6 @@ def exec_template(from_template, to, model):
                     exec_iter(list, template, output)
                 else:
                     output.write(line.format(**model))
-
-
-ISYS = '#include <...> search starts here:'
 
 
 def mcu_to_def(mcu):
@@ -106,13 +103,25 @@ def avrdude_loc():
     return subprocess.check_output('which avrdude', shell=True).strip()
 
 
-def isystem():
-    proc = subprocess.Popen('echo | avr-cpp -v', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+def parse_system_includes(toolpaths):
+    """
+    Parses the output of "avr-cpp -v" command to find the system include paths.
+
+    :return: list of include directories checked when #include <...> is seen by preprocessor.
+    """
+    command = 'echo | {cpp} -v'.format(cpp=toolpaths['avr-cpp_loc'])
+    ISYS    = '#include <...> search starts here:'
+
+    print
+    print "Parsing avr-cpp system include paths.";
+    print 'Checking output of "{0}"'.format(command)
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
-    exitcode = proc.returncode
+    # exitcode = proc.returncode
 
     lines = string.split(err, '\n')
-    isys = []
+    system_includes = []
 
     consider = False
     for line in lines:
@@ -120,11 +129,14 @@ def isystem():
             consider = True
         elif consider:
             if line.startswith(' '):
-                isys.append(os.path.normpath(line.strip()))
+                system_includes.append(os.path.normpath(line.strip()))
             else:
                 break
 
-    return isys
+    for s in system_includes:
+        print 'Found system include: {0}'.format(s)
+
+    return system_includes
 
 
 def ensure_installed(tool):
@@ -167,32 +179,40 @@ def mkdirs_p(dirs):
 
 
 def main():
-    model = {}
-    tools = ['avr-gcc', 'avr-objcopy', 'avr-objdump', 'avr-size', 'avr-nm', 'avrdude']
+    toolpaths = {}
+    tools     = ['avr-cpp', 'avr-gcc', 'avr-objcopy', 'avr-objdump', 'avr-size', 'avr-nm', 'avrdude']
 
     # Find the tools on the PATH.
     print
     print "Searching for AVR tools in the PATH folders ({path})".format(path=os.environ['PATH'])
     for tool in tools:
-        model[tool + '_loc'] = ensure_installed(tool)
+        toolpaths[tool + '_loc'] = ensure_installed(tool)
 
     # If any tools are missing, consider that an error.
     # Try finding them in Arduino.app.
-    if None in model.values():
+    if None in toolpaths.values():
         print "Could not find all tools in the PATH folders."
         print
         print "Searching {ap}".format(ap=ARDUINO_PATH)
         for tool in tools:
-            model[tool + '_loc'] = ensure_installed_arduino(tool)
+            toolpaths[tool + '_loc'] = ensure_installed_arduino(tool)
 
-    return
+    # Check again, if any tools are missing, then exit.
+    if None in toolpaths.values():
+        print "Could not find all tools in the Arduino.app package."
+        print "Exiting."
+        exit(1)
 
-    exec_template('Makefile.tpl', 'Makefile', model)
+    exec_template('Makefile.tpl', 'Makefile', toolpaths)
 
-    model = {'isystem': ' '.join(isystem()),
+    model = {'isystem': ' '.join(parse_system_includes(toolpaths)),
              'mcus': supported_mcus(),
              'programmers': supported_programmers()
              }
+    print model
+
+    return
+
     exec_template('TemplateInfo.plist.tpl', 'TemplateInfo.plist', model)
 
     print('Generated template:\n\tMCUs        : {}\n\tProgrammers : {}'
