@@ -46,13 +46,18 @@ def mcu_to_def(mcu):
     return '__AVR_' + defi + '__'
 
 
-def parse_supported_mcus():
+def parse_supported_mcus(toolpaths):
+    command = '{gcc} -Wa,-mlist-devices --target-help'.format(gcc=toolpaths['avr-gcc_loc'])
     HEADER = 'Known MCU names:'
 
-    proc = subprocess.Popen('avr-gcc -Wa,-mlist-devices --target-help', stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            shell=True)
+    print
+    print "Parsing avr-gcc supported MCU info.";
+    print 'Checking output of "{0}"'.format(command)
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
-    exitcode = proc.returncode
+    # exitcode = proc.returncode
+
     lines = string.split(out, '\n')
 
     mcus = []
@@ -101,7 +106,7 @@ def parse_system_includes(toolpaths):
     :return: list of include directories checked when #include <...> is seen by preprocessor.
     """
     command = 'echo | {cpp} -v'.format(cpp=toolpaths['avr-cpp_loc'])
-    ISYS    = '#include <...> search starts here:'
+    HEADER  = '#include <...> search starts here:'
 
     print
     print "Parsing avr-cpp system include paths.";
@@ -116,7 +121,7 @@ def parse_system_includes(toolpaths):
 
     consider = False
     for line in lines:
-        if line == ISYS:
+        if line == HEADER:
             consider = True
         elif consider:
             if line.startswith(' '):
@@ -198,10 +203,11 @@ def main():
 
     model = {
         'isystem': ' '.join(parse_system_includes(toolpaths)),
-        'mcus': parse_supported_mcus(),
+        'mcus':             parse_supported_mcus(toolpaths),
         'programmers': supported_programmers()
     }
 
+    print
     print model
 
     return
