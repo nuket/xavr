@@ -46,7 +46,7 @@ def mcu_to_def(mcu):
     return '__AVR_' + defi + '__'
 
 
-def supported_mcus():
+def parse_supported_mcus():
     HEADER = 'Known MCU names:'
 
     proc = subprocess.Popen('avr-gcc -Wa,-mlist-devices --target-help', stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -92,15 +92,6 @@ def supported_programmers():
                 break
 
     return programmers
-
-
-def avr_loc():
-    bin_path = subprocess.check_output('which avr-gcc', shell=True).strip()
-    return os.path.dirname(os.path.dirname(os.path.realpath(bin_path)))
-
-
-def avrdude_loc():
-    return subprocess.check_output('which avrdude', shell=True).strip()
 
 
 def parse_system_includes(toolpaths):
@@ -205,10 +196,12 @@ def main():
 
     exec_template('Makefile.tpl', 'Makefile', toolpaths)
 
-    model = {'isystem': ' '.join(parse_system_includes(toolpaths)),
-             'mcus': supported_mcus(),
-             'programmers': supported_programmers()
-             }
+    model = {
+        'isystem': ' '.join(parse_system_includes(toolpaths)),
+        'mcus': parse_supported_mcus(),
+        'programmers': supported_programmers()
+    }
+
     print model
 
     return
