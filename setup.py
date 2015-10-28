@@ -9,6 +9,8 @@ import shutil
 ITER_BEGIN = re.compile('\s*@iter\s+(.+?)@\s*')
 ITER_END = re.compile('\s*@end@\s*')
 
+ARDUINO_PATH = '/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin'
+
 
 def exec_iter(items, template, output):
     lines = []
@@ -126,15 +128,32 @@ def isystem():
 
 
 def ensure_installed(tool):
+    """
+    Tries to find :param tool: on the PATH, or, checks to see if Arduino.app was installed
+    and tries to find :param tool: somewhere in there.
+
+    :returns: path to the tool executable, or None if not found
+    """
     proc = subprocess.Popen('which ' + tool, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
     exitcode = proc.returncode
+
     if exitcode == 0:
-        print('Found {t} install in "{p}"'.format(t=tool, p=out.strip()))
+        print('Found {t:<11} install in "{p}"'.format(t=tool, p=out.strip()))
         return out.strip()
     else:
-        print(tool + ' is not installed (or is not in the PATH). Exiting')
-        sys.exit(1)
+        print('{t:<11} is not installed (or is not in the PATH).'.format(t=tool))
+        return None
+
+
+def ensure_installed_arduino(tool):
+    tool_path = os.path.join(ARDUINO_PATH, tool)
+    if os.path.isfile(tool_path):
+        print('Found {t:<11} install in "{p}"'.format(t=tool, p=tool_path))
+        return tool_path
+    else:
+        print('{t:<11} is not installed (or is not in the PATH).'.format(t=tool))
+        return None
 
 
 def mkdirs_p(dirs):
@@ -150,8 +169,23 @@ def mkdirs_p(dirs):
 def main():
     model = {}
     tools = ['avr-gcc', 'avr-objcopy', 'avr-objdump', 'avr-size', 'avr-nm', 'avrdude']
+
+    # Find the tools on the PATH.
+    print
+    print "Searching for AVR tools in the PATH folders ({path})".format(path=os.environ['PATH'])
     for tool in tools:
         model[tool + '_loc'] = ensure_installed(tool)
+
+    # If any tools are missing, consider that an error.
+    # Try finding them in Arduino.app.
+    if None in model.values():
+        print "Could not find all tools in the PATH folders."
+        print
+        print "Searching {ap}".format(ap=ARDUINO_PATH)
+        for tool in tools:
+            model[tool + '_loc'] = ensure_installed_arduino(tool)
+
+    return
 
     exec_template('Makefile.tpl', 'Makefile', model)
 
