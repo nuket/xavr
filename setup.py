@@ -237,28 +237,31 @@ def main():
         'programmers':      parse_supported_programmers(toolpaths)
     }
 
-    print
-    print model
-
-    return
-
     exec_template('TemplateInfo.plist.tpl', 'TemplateInfo.plist', model)
 
-    print('Generated template:\n\tMCUs        : {}\n\tProgrammers : {}'
-          .format(len(model['mcus']), len(model['programmers'])))
+    print
+    print 'Generated Xcode TemplateInfo.plist containing support for:'
+    print '    {0}: {1}'.format('MCUs       ', len(model['mcus']))
+    print '    {0}: {1}'.format('Programmers', len(model['programmers']))
 
     DEST_DIR = os.path.join(os.path.expanduser('~'),
                             'Library/Developer/Xcode/Templates/Project Template/xavr/xavr.xctemplate/')
-    print('Installing template in: "{}"'.format(DEST_DIR))
+
+    print
+    print('Installing template in: "{0}"'.format(DEST_DIR))
+    print 'To remove, do:   rm -rf "{0}"'.format(DEST_DIR)
     mkdirs_p(DEST_DIR)
-    shutil.copy('main.c', DEST_DIR)
-    shutil.copy('Makefile', DEST_DIR)
+    shutil.copy('main.c',             DEST_DIR)
+    shutil.copy('Makefile',           DEST_DIR)
     shutil.copy('TemplateInfo.plist', DEST_DIR)
-    shutil.copy('TemplateIcon.icns', DEST_DIR)
+    shutil.copy('TemplateIcon.icns',  DEST_DIR)
 
     os.remove('Makefile')
     os.remove('TemplateInfo.plist')
-    print('Done. Hack away !\n')
+
+    print
+    print 'Done. Hack away!'
+    print
 
 
 if __name__ == '__main__':
