@@ -2,6 +2,11 @@ X-AVR
 =====
 
 tl;dr: **X-AVR** is an XCode template for generating `AVR C` projects.
+The plan is to also add support for `AVR C++` and `Arduino` projects,
+with full support for all the Arduino classes.
+
+At that point, I'll probably rename the project and break all your
+inbound links. :)
 
 **X-AVR** is a python script which uses the installed `avr-gcc` and
 `avrdude` to generate and install an XCode `TemplateInfo.plist` file.
