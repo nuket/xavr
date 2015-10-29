@@ -229,6 +229,9 @@ def main():
         print "Exiting."
         exit(1)
 
+    if 'Arduino' in toolpaths['avrdude_loc']:
+        toolpaths['avrdude_conf_flag'] = '-C {0}'.format(os.path.normpath(os.path.dirname(toolpaths['avrdude_loc']) + '/../etc/avrdude.conf'))
+
     exec_template('Makefile.tpl', 'Makefile', toolpaths)
 
     model = {

@@ -220,7 +220,7 @@
 			<key>Default</key>
 			<string>16000000</string>
 			<key>Description</key>
-			<string>MCU frequence (in Hz)</string>
+			<string>MCU frequency (in Hz)</string>
 			<key>Identifier</key>
 			<string>F_CPU</string>
 			<key>Name</key>

@@ -12,6 +12,7 @@
 # Markus Pfaff
 # Sander Pool
 # Frederik Rouleau
+# Max Vilimpoc
 #
 #----------------------------------------------------------------------------
 # On command line:
@@ -206,6 +207,8 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
+# Official Arduino avrdude command line looks something like:
+# /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avrdude -C/Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf -v -patmega328p -carduino -P/dev/cu.usbserial-A600G4IX -b57600 -D -Uflash:w:/var/folders/dw/1cbxn6rd5fq645hvp89jn3gr0000gp/T/build5948053803893238008.tmp/arduino-shell.cpp.hex:i
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(OBJDIR)/$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -225,10 +228,15 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(OBJDIR)/$(TARGET).hex
 # to submit bug reports.
 #AVRDUDE_VERBOSE = -v -v
 
-AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
+# If the Makefile is being configured for an Arduino-bundled
+# avrdude, then the -C <config file> parameter must be provided.
+AVRDUDE_CONF_FLAG = {avrdude_conf_flag}
+
+AVRDUDE_FLAGS = -v -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -b 57600
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
+AVRDUDE_FLAGS += $(AVRDUDE_CONF_FLAG)
 
 
 
