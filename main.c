@@ -1,16 +1,13 @@
-#include <stdio.h>
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <util/delay.h>
 
-void initIO(void) {
-	
-}
-
-int main(void) {
-	initIO();
-
-	while (1) {
-	}
-	return 0; // never reached
+int main (void)
+{
+    DDRB |= _BV(DDB5);
+    
+    for (;;)
+    {
+        PORTB ^= _BV(PB5);
+        _delay_ms(500);
+    }
 }
