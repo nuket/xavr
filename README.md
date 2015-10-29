@@ -1,13 +1,17 @@
 X-AVR
 =====
 
-**X-AVR** is an XCode template for generating `AVR C` projects.
+tl;dr: **X-AVR** is an XCode template for generating `AVR C` projects.
 
-Now the meta version: **X-AVR** is a python script which uses the installed `avr-gcc` and `avrdude` to generate and install an XCode `TemplateInfo.plist` file. This template can be used to create `AVR C` XCode projects with a `Makefile` to build and upload the program to an `AVR` chip.
+**X-AVR** is a python script which uses the installed `avr-gcc` and
+`avrdude` to generate and install an XCode `TemplateInfo.plist` file.
+This template can be used to create `AVR C` XCode projects with a `Makefile`
+to build and upload the program to an `AVR` chip.
 
-*Notice*: This template does not generate projects in *the arduino language*. The generated project uses the `C` language and the `avr-libc` library.
+*Notice*: This template does not generate projects using *the Arduino extensions*.
+The generated project uses the `C` language and the `avr-libc` library.
 
-For example, activating pin 13 on an arduino looks like this:
+For example, activating pin 13 on an Arduino, using `avr-libc` looks like this:
 
 ```C
 DDRB |= _BV(PB5)
@@ -23,13 +27,17 @@ digitalWrite(13, HIGH)
 
 # Motivation
 
-There are literally dozens of articles and blog posts showing a very basic setup to use XCode for `AVR` C programming: a C project with an external build system based on a `Makefile`.
+The Arduino IDE is limited. It's good enough for beginners, but there's a
+lot of magic that happens behind the scenes that advanced programmers
+might not like.
 
-The problem is that with such a basic setup you might as well use a simple text editor instead of XCode.
-Indeed, you don't get much besides a rudimentary syntax coloring (no autocomplete for example).
+Also, there's no autocomplete.
 
-To fix this, the `X-AVR` project template setus up a *fake* build target (called `index`) which uses clang to enable XCode to parse and index your project code.
-`X-AVR` also cnfigures the following variables for your build:
+To fix this, the `X-AVR` project template sets up a *fake* build target
+(called `index`) which uses clang to enable XCode to parse and index
+your project code.
+
+`X-AVR` also configures the following variables for your build:
 * `HEADER_SEARCH_PATHS`: So that XCode can index the `avr-libc` headers and include their definitions (port and register names, functions, etc.) in the autocomplete suggestions
 * `GCC_PREPROCESSOR_DEFINITIONS`: The selected MCU macro is set (e.g. `__AVR_ATmega328__`) to get accurate autocomplete over the port and register names. `F_CPU` macro is also set (otherwise the indexing would encouter errors)
 
@@ -78,7 +86,8 @@ brew install avr-libc
 
 ## Icon
 
-The template icon was created using GIMP and includes a [mictochip icon](http://thenounproject.com/term/microchip/31537/) designed by Lutz Schubert from the Noun Project and published under the Creative Commons – Attribution (CC BY 3.0) license.
+The template icon was created using GIMP and includes a [microchip icon](http://thenounproject.com/term/microchip/31537/)
+designed by Lutz Schubert from the Noun Project and published under the Creative Commons – Attribution (CC BY 3.0) license.
 
 ## Makefile
 
