@@ -1,19 +1,30 @@
-X-AVR
-=====
+# X-AVR
 
-tl;dr: **X-AVR** is an XCode template for generating `AVR C` projects.
+**X-AVR** is an XCode template for generating `AVR C` projects.
 The plan is to also add support for `AVR C++` and `Arduino` projects,
 with full support for all the Arduino classes.
 
 At that point, I'll probably rename the project and break all your
 inbound links. :)
 
-**X-AVR** is a python script which uses the installed `avr-gcc` and
+## Requirements
+
+* OS X and Xcode
+* The Arduino IDE installed in /Applications
+
+## How It Works
+
+**X-AVR** is a Python script which uses the prebuilt Arduino AVR GCC tools and
 `avrdude` to generate and install an XCode `TemplateInfo.plist` file.
 This template can be used to create `AVR C` XCode projects with a `Makefile`
 to build and upload the program to an `AVR` chip.
 
-*Notice*: This template does not generate projects using *the Arduino extensions*.
+This is nice because it means we can reuse the work that Arduino does in
+building stable compiler releases.
+
+### Differences To Arduino
+
+*Note*: This template does not generate projects using *the Arduino extensions*.
 The generated project uses the `C` language and the `avr-libc` library.
 
 For example, activating pin 13 on an Arduino, using `avr-libc` looks like this:
@@ -71,21 +82,6 @@ The project is created with the following targets:
 * `Index`: a *trick* target to get XCode autocompletion to work. You're not supposed to interact with this target
 
 Also check [Using XCode for AVR C developement](http://jawher.me/2014/03/21/using-xcode-avr-c/) for more detailed instructions and screenshots.
-
-# Prequisites
-
-* `avr-gcc` must be installed and in the `PATH` variable (detectable via a `which avr-gcc`)
-* `avrdude` must be installed and in the `PATH` variable (detectable via a `which avrdude`)
-
-Simply install [AVR Crosspack](http://www.obdev.at/products/crosspack/index.html) to satisfy these prequisites.
-
-Another option is to use `homebrew`:
-
-```
-brew install avrdude
-brew tap larsimmisch/avr
-brew install avr-libc
-```
 
 # Credits
 
